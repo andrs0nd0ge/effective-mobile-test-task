@@ -18,6 +18,7 @@ public class TaskDao {
 
     public List<Task> getTasksOfOtherUsers(long authorId) {
         String sql = "select * from w.tasks where author_id <> :authorId";
+
         return namedJdbcTemplate.query(sql,
                 new MapSqlParameterSource().addValue("authorId", authorId),
                 new BeanPropertyRowMapper<>(Task.class));
@@ -25,6 +26,7 @@ public class TaskDao {
 
     public List<Task> getTasksOfUser(long authorId) {
         String sql = "select * from w.tasks where author_id = :authorId";
+
         return namedJdbcTemplate.query(sql,
                 new MapSqlParameterSource().addValue("authorId", authorId),
                 new BeanPropertyRowMapper<>(Task.class));
@@ -33,6 +35,7 @@ public class TaskDao {
     public void createTask(String header, String description, long statusId, long priorityId, long authorId) {
         String sql = "insert into w.tasks (header, description, status_id, priority_id, author_id, executor_id) " +
                 "values (:header, :description, :statusId, :priorityId, :authorId, :authorId)";
+
         namedJdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("header", header)
                 .addValue("description", description)
@@ -62,6 +65,7 @@ public class TaskDao {
 
     public void deleteTask(long taskId, long authorId) {
         String sql = "delete from w.tasks where id = :taskId and author_id = :authorId";
+
         namedJdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("taskId", taskId)
                 .addValue("authorId", authorId));
@@ -71,6 +75,7 @@ public class TaskDao {
         String sql = "update w.tasks " +
                 "set status_id = :statusId " +
                 "where (author_id = :userId or executor_id = :userId) and id = :taskId";
+
         namedJdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("statusId", statusId)
                 .addValue("userId", userId)
@@ -81,6 +86,7 @@ public class TaskDao {
         String sql = "update w.tasks " +
                 "set executor_id = :executorId " +
                 "where author_id = :authorId and id = :taskId";
+
         namedJdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("authorId", authorId)
                 .addValue("executorIr", executorId)

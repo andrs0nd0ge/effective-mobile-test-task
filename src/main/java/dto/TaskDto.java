@@ -1,5 +1,6 @@
 package dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,12 +10,18 @@ import models.Task;
 @Setter
 @Builder
 public class TaskDto {
+    @JsonProperty("task_id")
+    private Long taskId;
     private String header;
     private String description;
-    private long statusId;
-    private long priorityId;
-    private long authorId;
-    private long executorId;
+    @JsonProperty("status_id")
+    private Long statusId;
+    @JsonProperty("priority_id")
+    private Long priorityId;
+    @JsonProperty("author_id")
+    private Long authorId;
+    @JsonProperty("executor_id")
+    private Long executorId;
 
     public static TaskDto from(Task task) {
         return builder()
