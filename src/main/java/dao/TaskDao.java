@@ -92,4 +92,13 @@ public class TaskDao {
                 .addValue("executorIr", executorId)
                 .addValue("taskId", taskId));
     }
+
+    public void addCommentToTask(long taskId, String comment) {
+        String sql = "insert into w.comments (comment, task_id) " +
+                "values (:comment, :taskId)";
+
+        namedJdbcTemplate.update(sql, new MapSqlParameterSource()
+                .addValue("comment", comment)
+                .addValue("taskId", taskId));
+    }
 }

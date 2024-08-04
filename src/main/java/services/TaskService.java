@@ -1,7 +1,7 @@
 package services;
 
 import dao.TaskDao;
-import dto.TaskDto;
+import dto.*;
 import models.Task;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +32,7 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    public void createTask(TaskDto taskDto, long authorId) {
+    public void createTask(CreateTaskDto taskDto, long authorId) {
         String header = taskDto.getHeader();
         String description = taskDto.getDescription();
 
@@ -51,7 +51,7 @@ public class TaskService {
         taskDao.createTask(header, description, statusId, priorityId, authorId);
     }
 
-    public void editTask(TaskDto taskDto, long authorId) {
+    public void editTask(EditTaskDto taskDto, long authorId) {
         long taskId = taskDto.getTaskId();
 
         String header = taskDto.getHeader();
@@ -66,13 +66,13 @@ public class TaskService {
         taskDao.editTask(taskId, header, description, statusId, priorityId, authorId, executorId);
     }
 
-    public void deleteTask(TaskDto taskDto, long authorId) {
+    public void deleteTask(DeleteTaskDto taskDto, long authorId) {
         long taskId = taskDto.getTaskId();
 
         taskDao.deleteTask(taskId, authorId);
     }
 
-    public void changeStatusOfTask(TaskDto taskDto, long userId) {
+    public void changeStatusOfTask(ChangeStatusTaskDto taskDto, long userId) {
         long taskId = taskDto.getTaskId();
 
         long statusId = taskDto.getStatusId();
@@ -80,11 +80,19 @@ public class TaskService {
         taskDao.changeStatusOfTask(taskId, statusId, userId);
     }
 
-    public void appointExecutorToTask(TaskDto taskDto, long authorId) {
+    public void appointExecutorToTask(ExecutorTaskDto taskDto, long authorId) {
         long taskId = taskDto.getTaskId();
 
         long executorId = taskDto.getExecutorId();
 
         taskDao.appointExecutorToTask(taskId, authorId, executorId);
+    }
+
+    public void addCommentToTask(CommentTaskDto taskDto) {
+        long taskId = taskDto.getTaskId();
+
+        String comment = taskDto.getComment();
+
+        taskDao.addCommentToTask(taskId, comment);
     }
 }

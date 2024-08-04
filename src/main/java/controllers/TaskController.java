@@ -20,7 +20,7 @@ public class TaskController {
     }
 
     @PostMapping("create")
-    public ResponseEntity<ResponseDto> createTask(@RequestBody TaskDto taskDto,
+    public ResponseEntity<ResponseDto> createTask(@RequestBody CreateTaskDto taskDto,
                                                   @RequestParam(name = "author_id") long authorId) {
         taskService.createTask(taskDto, authorId);
 
@@ -34,7 +34,7 @@ public class TaskController {
     }
 
     @PostMapping("edit")
-    public ResponseEntity<ResponseDto> editTask(@RequestBody TaskDto taskDto,
+    public ResponseEntity<ResponseDto> editTask(@RequestBody EditTaskDto taskDto,
                                                 @RequestParam(name = "author_id") long authorId) {
 
         // TODO Return message "Task ID cannot be null" (using enums)
@@ -63,7 +63,7 @@ public class TaskController {
     }
 
     @DeleteMapping("delete")
-    public ResponseEntity<ResponseDto> deleteTask(@RequestBody TaskDto taskDto,
+    public ResponseEntity<ResponseDto> deleteTask(@RequestBody DeleteTaskDto taskDto,
                                                   @RequestParam(name = "author_id") long authorId) {
         // TODO Return message "Task ID cannot be null" (using enums)
         Long taskId = taskDto.getTaskId();
@@ -91,7 +91,7 @@ public class TaskController {
     }
 
     @PostMapping("change_status")
-    public ResponseEntity<ResponseDto> changeStatusOfTask(@RequestBody TaskDto taskDto,
+    public ResponseEntity<ResponseDto> changeStatusOfTask(@RequestBody ChangeStatusTaskDto taskDto,
                                                           @RequestParam(name = "user_id") long userId) {
         // TODO Return message "Task ID cannot be null" (using enums)
         Long taskId = taskDto.getTaskId();
@@ -120,7 +120,7 @@ public class TaskController {
 
 
     @PostMapping("appoint")
-    public ResponseEntity<ResponseDto> appointExecutorToTask(@RequestBody TaskDto taskDto,
+    public ResponseEntity<ResponseDto> appointExecutorToTask(@RequestBody ExecutorTaskDto taskDto,
                                                              @RequestParam(name = "author_id") long authorId) {
         // TODO Return message "Task ID cannot be null" (using enums)
         Long taskId = taskDto.getTaskId();
@@ -147,8 +147,35 @@ public class TaskController {
         return new ResponseEntity<>(responseDto, httpStatus);
     }
 
+    @PostMapping("comment")
+    public ResponseEntity<ResponseDto> addCommentToTask(@RequestBody CommentTaskDto taskDto) {
+        // TODO Return message "Task ID cannot be null" (using enums)
+        Long taskId = taskDto.getTaskId();
+
+        if (taskId == null) {
+            HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+
+            ResponseDto responseDto = new ResponseDto();
+            responseDto.setStatus(badRequest.value());
+            responseDto.setMessage(badRequest.getReasonPhrase());
+
+            return new ResponseEntity<>(responseDto, badRequest);
+        }
+        // TODO Return message "Task ID cannot be null" (using enums)
+
+        taskService.addCommentToTask(taskDto);
+
+        HttpStatus httpStatus = HttpStatus.OK;
+
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setStatus(httpStatus.value());
+        responseDto.setMessage(httpStatus.getReasonPhrase());
+
+        return new ResponseEntity<>(responseDto, httpStatus);
+    }
+
     @GetMapping("main")
-    public ResponseEntity<List<TaskDto>> fetchTasksOfOthers(
+    public ResponseEntity<List<TaskDto>> fetchTasksOfOtherUsers(
             @RequestParam(name = "author_id") long authorId
     ) {
         List<TaskDto> tasks = taskService.getTasksOfOtherUsers(authorId);
