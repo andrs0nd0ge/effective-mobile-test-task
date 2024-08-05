@@ -32,10 +32,17 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    public List<TaskDto> getTasksOfUser(int page, long authorId) {
-        List<Task> tasks = taskDao.getTasksOfUser(page, authorId);
+    public List<TaskDto> getTasksOfUser(Integer page,
+                                        Integer statusId,
+                                        Integer priorityId,
+                                        String header,
+                                        String description,
+                                        long authorId) {
+        header = header != null ? header.trim() : null;
 
+        description = description != null ? description.trim() : null;
 
+        List<Task> tasks = taskDao.getTasksOfUser(page, statusId, priorityId, header, description, authorId);
 
         return tasks.stream()
                 .map(TaskDto::from)

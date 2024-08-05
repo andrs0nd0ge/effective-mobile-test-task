@@ -82,8 +82,14 @@ public class TaskDao {
         return tasks;
     }
 
-    public List<Task> getTasksOfUser(int page, long userId) {
-        String sql = "select t.id as task_id, " +
+    public List<Task> getTasksOfUser(Integer page,
+                                     Integer statusId,
+                                     Integer priorityId,
+                                     String header,
+                                     String description,
+                                     long userId) {
+        StringBuilder sqlStringBuilder = new StringBuilder(
+                "select t.id as task_id, " +
                 "       t.header, " +
                 "       t.description, " +
                 "       s.name as status, " +
@@ -95,15 +101,44 @@ public class TaskDao {
                 "inner join w.priorities as p on t.priority_id = p.id " +
                 "inner join w.users as u on t.author_id = u.id " +
                 "inner join w.users as e on t.executor_id = e.id " +
-                "where (t.author_id = :userId or t.executor_id = :userId) " +
-                "order by t.id " +
-                "limit :pageSize offset (:pageNumber - 1) * :pageSize";
+                "where (t.author_id = :userId or t.executor_id = :userId)"
+        );
 
-        List<Task> tasks = namedJdbcTemplate.query(sql, new MapSqlParameterSource()
-                .addValue("userId", userId)
-                .addValue("pageSize", pageSize)
-                .addValue("pageNumber", page),
-                new TaskRowMapper());
+
+        MapSqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("userId", userId);
+
+        if (statusId != null) {
+            sqlStringBuilder.append(" and (:statusId is null or t.status_id = :statusId) ");
+            parameterSource.addValue("statusId", statusId);
+        }
+
+        if (priorityId != null) {
+            sqlStringBuilder.append(" and (:priorityId is null or t.priority_id = :priorityId) ");
+            parameterSource.addValue("priorityId", priorityId);
+        }
+
+        if (header != null) {
+            sqlStringBuilder.append(" and (:header is null or lower(t.header) like concat('%', lower(:header), '%')) ");
+            parameterSource.addValue("header", header);
+        }
+
+        if (description != null) {
+            sqlStringBuilder.append(" and (:description is null or lower(t.description) like concat('%', lower(:description), '%')) ");
+            parameterSource.addValue("description", description);
+        }
+
+        sqlStringBuilder.append(" order by t.id ");
+
+        if (page != null) {
+            sqlStringBuilder.append(" limit :pageSize offset (:pageNumber - 1) * :pageSize ");
+            parameterSource.addValue("pageSize", pageSize)
+                           .addValue("pageNumber", page);
+        }
+
+        String sql = sqlStringBuilder.toString();
+
+        List<Task> tasks = namedJdbcTemplate.query(sql, parameterSource, new TaskRowMapper());
 
         for (Task task : tasks) {
             List<Comment> comments = getCommentsForTask(task.getId());

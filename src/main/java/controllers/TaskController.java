@@ -48,10 +48,14 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<TaskDto>> fetchTasksOfUser(
-            @RequestParam(name = "p") int page,
+            @RequestParam(required = false, name = "p") Integer page,
+            @RequestParam(required = false, name = "status_id") Integer statusId,
+            @RequestParam(required = false, name = "priority_id") Integer priorityId,
+            @RequestParam(required = false) String header,
+            @RequestParam(required = false) String description,
             @RequestParam(name = "user_id") long userId
     ) {
-        List<TaskDto> tasks = taskService.getTasksOfUser(page, userId);
+        List<TaskDto> tasks = taskService.getTasksOfUser(page, statusId, priorityId, header, description, userId);
 
         if (tasks.isEmpty()) {
             return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NO_CONTENT);
