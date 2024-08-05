@@ -44,49 +44,53 @@ public class TaskDao {
         return tasks;
     }
 
-    public List<Task> getTasksOfOtherUsers(long authorId) {
+    public List<Task> getTasksOfOtherUsers(long userId) {
         String sql = "select t.id as task_id, " +
                 "       t.header, " +
                 "       t.description, " +
                 "       s.name as status, " +
                 "       p.name as priority, " +
                 "       u.username as author_username, " +
-                "       e.username as executor_username, " +
-                "       c.comment " +
+                "       e.username as executor_username " +
                 "from w.tasks as t " +
                 "inner join w.statuses as s on t.status_id = s.id " +
                 "inner join w.priorities as p on t.priority_id = p.id " +
                 "inner join w.users as u on t.author_id = u.id " +
                 "inner join w.users as e on t.executor_id = e.id " +
-                "inner join w.comments as c on t.id = c.task_id " +
-                "where t.author_id <> :authorId " +
-                "order by t.id";
-
-        return namedJdbcTemplate.query(sql,
-                new MapSqlParameterSource().addValue("authorId", authorId),
-                new TaskRowMapper());
-    }
-
-    public List<Task> getTasksOfUser(long authorId) {
-        String sql = "select t.id as task_id, " +
-                "       t.header, " +
-                "       t.description, " +
-                "       s.name as status, " +
-                "       p.name as priority, " +
-                "       u.username as author_username, " +
-                "       e.username as executor_username, " +
-                "       c.comment " +
-                "from w.tasks as t " +
-                "inner join w.statuses as s on t.status_id = s.id " +
-                "inner join w.priorities as p on t.priority_id = p.id " +
-                "inner join w.users as u on t.author_id = u.id " +
-                "inner join w.users as e on t.executor_id = e.id " +
-                "inner join w.comments as c on t.id = c.task_id " +
-                "where t.author_id = :authorId " +
+                "where (t.author_id <> :userId and t.executor_id <> :userId) " +
                 "order by t.id";
 
         List<Task> tasks = namedJdbcTemplate.query(sql,
-                new MapSqlParameterSource().addValue("authorId", authorId),
+                new MapSqlParameterSource().addValue("userId", userId),
+                new TaskRowMapper());
+
+        for (Task task : tasks) {
+            List<Comment> comments = getCommentsForTask(task.getId());
+
+            task.setComments(comments);
+        }
+
+        return tasks;
+    }
+
+    public List<Task> getTasksOfUser(long userId) {
+        String sql = "select t.id as task_id, " +
+                "       t.header, " +
+                "       t.description, " +
+                "       s.name as status, " +
+                "       p.name as priority, " +
+                "       u.username as author_username, " +
+                "       e.username as executor_username " +
+                "from w.tasks as t " +
+                "inner join w.statuses as s on t.status_id = s.id " +
+                "inner join w.priorities as p on t.priority_id = p.id " +
+                "inner join w.users as u on t.author_id = u.id " +
+                "inner join w.users as e on t.executor_id = e.id " +
+                "where (t.author_id = :userId or t.executor_id = :userId) " +
+                "order by t.id";
+
+        List<Task> tasks = namedJdbcTemplate.query(sql,
+                new MapSqlParameterSource().addValue("userId", userId),
                 new TaskRowMapper());
 
         for (Task task : tasks) {
@@ -121,21 +125,15 @@ public class TaskDao {
                 .addValue("authorId", authorId));
     }
 
-    public void editTask(long taskId, String header, String description, long statusId, long priorityId, long authorId, long executorId) {
+    public void editTask(long taskId, String header, String description, long authorId) {
         String sql = "update w.tasks " +
                 "set header = :header, " +
-                "    description = :description, " +
-                "    status_id = :statusId, " +
-                "    priority_id = :priorityId, " +
-                "    executor_id = :executorId " +
+                "    description = :description " +
                 "where author_id = :authorId and id = :taskId";
 
         namedJdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("header", header)
                 .addValue("description", description)
-                .addValue("statusId", statusId)
-                .addValue("priorityId", priorityId)
-                .addValue("executorId", executorId)
                 .addValue("authorId", authorId)
                 .addValue("taskId", taskId));
     }
@@ -166,7 +164,7 @@ public class TaskDao {
 
         namedJdbcTemplate.update(sql, new MapSqlParameterSource()
                 .addValue("authorId", authorId)
-                .addValue("executorIr", executorId)
+                .addValue("executorId", executorId)
                 .addValue("taskId", taskId));
     }
 

@@ -24,8 +24,8 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    public List<TaskDto> getTasksOfOtherUsers(long authorId) {
-        List<Task> tasks = taskDao.getTasksOfOtherUsers(authorId);
+    public List<TaskDto> getTasksOfOtherUsers(long userId) {
+        List<Task> tasks = taskDao.getTasksOfOtherUsers(userId);
 
         return tasks.stream()
                 .map(TaskDto::from)
@@ -67,13 +67,7 @@ public class TaskService {
         String header = taskDto.getHeader();
         String description = taskDto.getDescription();
 
-        long statusId = taskDto.getStatusId();
-
-        long priorityId = taskDto.getPriorityId();
-
-        long executorId = taskDto.getExecutorId();
-
-        taskDao.editTask(taskId, header, description, statusId, priorityId, authorId, executorId);
+        taskDao.editTask(taskId, header, description, authorId);
     }
 
     public void deleteTask(DeleteTaskDto taskDto, long authorId) {

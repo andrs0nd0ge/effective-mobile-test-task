@@ -30,11 +30,11 @@ public class TaskController {
         return new ResponseEntity<>(tasks, HttpStatus.OK);
     }
 
-    @GetMapping("main")
+    @GetMapping("of_others")
     public ResponseEntity<List<TaskDto>> fetchTasksOfOtherUsers(
-            @RequestParam(name = "author_id") long authorId
+            @RequestParam(name = "user_id") long userId
     ) {
-        List<TaskDto> tasks = taskService.getTasksOfOtherUsers(authorId);
+        List<TaskDto> tasks = taskService.getTasksOfOtherUsers(userId);
 
         if (tasks.isEmpty()) {
             return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NO_CONTENT);
@@ -45,9 +45,9 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<TaskDto>> fetchTasksOfUser(
-            @RequestParam(name = "author_id") long authorId
+            @RequestParam(name = "user_id") long userId
     ) {
-        List<TaskDto> tasks = taskService.getTasksOfUser(authorId);
+        List<TaskDto> tasks = taskService.getTasksOfUser(userId);
 
         if (tasks.isEmpty()) {
             return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NO_CONTENT);

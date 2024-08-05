@@ -11,10 +11,4 @@ public class EditTaskDto {
     private Long taskId;
     private String header;
     private String description;
-    @JsonProperty("status_id")
-    private Long statusId;
-    @JsonProperty("priority_id")
-    private Long priorityId;
-    @JsonProperty("executor_id")
-    private Long executorId;
 }
