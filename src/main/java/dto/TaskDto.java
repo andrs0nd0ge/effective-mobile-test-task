@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import models.Task;
+import models.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,23 +16,22 @@ public class TaskDto {
     private Long taskId;
     private String header;
     private String description;
-    @JsonProperty("status_id")
-    private Long statusId;
-    @JsonProperty("priority_id")
-    private Long priorityId;
-    @JsonProperty("author_id")
-    private Long authorId;
-    @JsonProperty("executor_id")
-    private Long executorId;
+    private String status;
+    private String priority;
+    private String author;
+    private String executor;
+    private List<CommentDto> comments;
 
     public static TaskDto from(Task task) {
         return builder()
+                .taskId(task.getId())
                 .header(task.getHeader())
                 .description(task.getDescription())
-                .statusId(task.getStatusId())
-                .priorityId(task.getPriorityId())
-                .authorId(task.getAuthorId())
-                .executorId(task.getExecutorId())
+                .status(task.getStatus())
+                .priority(task.getPriority())
+                .author(task.getAuthor() != null ? task.getAuthor().getUsername() : null)
+                .executor(task.getExecutor() != null ? task.getExecutor().getUsername() : null)
+                .comments(task.getComments().stream().map(CommentDto::from).toList())
                 .build();
     }
 }

@@ -16,6 +16,14 @@ public class TaskService {
         this.taskDao = taskDao;
     }
 
+    public List<TaskDto> getAllTasks() {
+        List<Task> tasks = taskDao.getAllTasks();
+
+        return tasks.stream()
+                .map(TaskDto::from)
+                .collect(Collectors.toList());
+    }
+
     public List<TaskDto> getTasksOfOtherUsers(long authorId) {
         List<Task> tasks = taskDao.getTasksOfOtherUsers(authorId);
 
@@ -26,6 +34,8 @@ public class TaskService {
 
     public List<TaskDto> getTasksOfUser(long authorId) {
         List<Task> tasks = taskDao.getTasksOfUser(authorId);
+
+
 
         return tasks.stream()
                 .map(TaskDto::from)
@@ -45,7 +55,7 @@ public class TaskService {
         Long priorityId = taskDto.getPriorityId();
 
         if (priorityId == null || priorityId == 0L) {
-            priorityId = 3L;
+            priorityId = 1L;
         }
 
         taskDao.createTask(header, description, statusId, priorityId, authorId);

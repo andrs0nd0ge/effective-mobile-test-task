@@ -19,6 +19,43 @@ public class TaskController {
         this.taskService = taskService;
     }
 
+    @GetMapping("all")
+    public ResponseEntity<List<TaskDto>> fetchAllTasks() {
+        List<TaskDto> tasks = taskService.getAllTasks();
+
+        if (tasks.isEmpty()) {
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(tasks, HttpStatus.OK);
+    }
+
+    @GetMapping("main")
+    public ResponseEntity<List<TaskDto>> fetchTasksOfOtherUsers(
+            @RequestParam(name = "author_id") long authorId
+    ) {
+        List<TaskDto> tasks = taskService.getTasksOfOtherUsers(authorId);
+
+        if (tasks.isEmpty()) {
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(tasks, HttpStatus.OK);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TaskDto>> fetchTasksOfUser(
+            @RequestParam(name = "author_id") long authorId
+    ) {
+        List<TaskDto> tasks = taskService.getTasksOfUser(authorId);
+
+        if (tasks.isEmpty()) {
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NO_CONTENT);
+        }
+
+        return new ResponseEntity<>(tasks, HttpStatus.OK);
+    }
+
     @PostMapping("create")
     public ResponseEntity<ResponseDto> createTask(@RequestBody CreateTaskDto taskDto,
                                                   @RequestParam(name = "author_id") long authorId) {
@@ -172,31 +209,5 @@ public class TaskController {
         responseDto.setMessage(httpStatus.getReasonPhrase());
 
         return new ResponseEntity<>(responseDto, httpStatus);
-    }
-
-    @GetMapping("main")
-    public ResponseEntity<List<TaskDto>> fetchTasksOfOtherUsers(
-            @RequestParam(name = "author_id") long authorId
-    ) {
-        List<TaskDto> tasks = taskService.getTasksOfOtherUsers(authorId);
-
-        if (tasks.isEmpty()) {
-            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NO_CONTENT);
-        }
-
-        return new ResponseEntity<>(tasks, HttpStatus.OK);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<TaskDto>> fetchTasksOfUser(
-            @RequestParam(name = "author_id") long authorId
-    ) {
-        List<TaskDto> tasks = taskService.getTasksOfUser(authorId);
-
-        if (tasks.isEmpty()) {
-            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.NO_CONTENT);
-        }
-
-        return new ResponseEntity<>(tasks, HttpStatus.OK);
     }
 }

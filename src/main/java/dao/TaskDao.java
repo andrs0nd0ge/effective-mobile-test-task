@@ -1,5 +1,7 @@
 package dao;
 
+import mappers.TaskRowMapper;
+import models.Comment;
 import models.Task;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -16,20 +18,95 @@ public class TaskDao {
         this.namedJdbcTemplate = namedJdbcTemplate;
     }
 
+    public List<Task> getAllTasks() {
+        String sql = "select t.id as task_id, " +
+                "       t.header, " +
+                "       t.description, " +
+                "       s.name as status, " +
+                "       p.name as priority, " +
+                "       u.username as author_username, " +
+                "       e.username as executor_username " +
+                "from w.tasks as t " +
+                "join w.statuses as s on t.status_id = s.id " +
+                "join w.priorities as p on t.priority_id = p.id " +
+                "join w.users as u on t.author_id = u.id " +
+                "join w.users as e on t.executor_id = e.id " +
+                "order by t.id";
+
+        List<Task> tasks = namedJdbcTemplate.query(sql, new TaskRowMapper());
+
+        for (Task task : tasks) {
+            List<Comment> comments = getCommentsForTask(task.getId());
+
+            task.setComments(comments);
+        }
+
+        return tasks;
+    }
+
     public List<Task> getTasksOfOtherUsers(long authorId) {
-        String sql = "select * from w.tasks where author_id <> :authorId";
+        String sql = "select t.id as task_id, " +
+                "       t.header, " +
+                "       t.description, " +
+                "       s.name as status, " +
+                "       p.name as priority, " +
+                "       u.username as author_username, " +
+                "       e.username as executor_username, " +
+                "       c.comment " +
+                "from w.tasks as t " +
+                "inner join w.statuses as s on t.status_id = s.id " +
+                "inner join w.priorities as p on t.priority_id = p.id " +
+                "inner join w.users as u on t.author_id = u.id " +
+                "inner join w.users as e on t.executor_id = e.id " +
+                "inner join w.comments as c on t.id = c.task_id " +
+                "where t.author_id <> :authorId " +
+                "order by t.id";
 
         return namedJdbcTemplate.query(sql,
                 new MapSqlParameterSource().addValue("authorId", authorId),
-                new BeanPropertyRowMapper<>(Task.class));
+                new TaskRowMapper());
     }
 
     public List<Task> getTasksOfUser(long authorId) {
-        String sql = "select * from w.tasks where author_id = :authorId";
+        String sql = "select t.id as task_id, " +
+                "       t.header, " +
+                "       t.description, " +
+                "       s.name as status, " +
+                "       p.name as priority, " +
+                "       u.username as author_username, " +
+                "       e.username as executor_username, " +
+                "       c.comment " +
+                "from w.tasks as t " +
+                "inner join w.statuses as s on t.status_id = s.id " +
+                "inner join w.priorities as p on t.priority_id = p.id " +
+                "inner join w.users as u on t.author_id = u.id " +
+                "inner join w.users as e on t.executor_id = e.id " +
+                "inner join w.comments as c on t.id = c.task_id " +
+                "where t.author_id = :authorId " +
+                "order by t.id";
+
+        List<Task> tasks = namedJdbcTemplate.query(sql,
+                new MapSqlParameterSource().addValue("authorId", authorId),
+                new TaskRowMapper());
+
+        for (Task task : tasks) {
+            List<Comment> comments = getCommentsForTask(task.getId());
+
+            task.setComments(comments);
+        }
+
+        return tasks;
+    }
+
+    private List<Comment> getCommentsForTask(long taskId) {
+        String sql = "select c.id, c.comment " +
+                "from w.comments as c " +
+                "inner join w.tasks as t on c.task_id = t.id " +
+                "where c.task_id = :taskId";
 
         return namedJdbcTemplate.query(sql,
-                new MapSqlParameterSource().addValue("authorId", authorId),
-                new BeanPropertyRowMapper<>(Task.class));
+                new MapSqlParameterSource().addValue("taskId", taskId),
+                new BeanPropertyRowMapper<>(Comment.class));
     }
 
     public void createTask(String header, String description, long statusId, long priorityId, long authorId) {
