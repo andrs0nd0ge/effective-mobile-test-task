@@ -16,24 +16,24 @@ public class TaskService {
         this.taskDao = taskDao;
     }
 
-    public List<TaskDto> getAllTasks() {
-        List<Task> tasks = taskDao.getAllTasks();
+    public List<TaskDto> getAllTasks(int page) {
+        List<Task> tasks = taskDao.getAllTasks(page);
 
         return tasks.stream()
                 .map(TaskDto::from)
                 .collect(Collectors.toList());
     }
 
-    public List<TaskDto> getTasksOfOtherUsers(long userId) {
-        List<Task> tasks = taskDao.getTasksOfOtherUsers(userId);
+    public List<TaskDto> getTasksOfOtherUsers(int page, long userId) {
+        List<Task> tasks = taskDao.getTasksOfOtherUsers(page, userId);
 
         return tasks.stream()
                 .map(TaskDto::from)
                 .collect(Collectors.toList());
     }
 
-    public List<TaskDto> getTasksOfUser(long authorId) {
-        List<Task> tasks = taskDao.getTasksOfUser(authorId);
+    public List<TaskDto> getTasksOfUser(int page, long authorId) {
+        List<Task> tasks = taskDao.getTasksOfUser(page, authorId);
 
 
 

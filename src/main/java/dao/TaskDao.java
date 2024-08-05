@@ -3,6 +3,7 @@ package dao;
 import mappers.TaskRowMapper;
 import models.Comment;
 import models.Task;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -13,12 +14,13 @@ import java.util.List;
 @Component
 public class TaskDao {
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
-
+    @Value("${page.size}")
+    private int pageSize;
     public TaskDao(NamedParameterJdbcTemplate namedJdbcTemplate) {
         this.namedJdbcTemplate = namedJdbcTemplate;
     }
 
-    public List<Task> getAllTasks() {
+    public List<Task> getAllTasks(int page) {
         String sql = "select t.id as task_id, " +
                 "       t.header, " +
                 "       t.description, " +
@@ -31,9 +33,13 @@ public class TaskDao {
                 "join w.priorities as p on t.priority_id = p.id " +
                 "join w.users as u on t.author_id = u.id " +
                 "join w.users as e on t.executor_id = e.id " +
-                "order by t.id";
+                "order by t.id " +
+                "limit :pageSize offset (:pageNumber - 1) * :pageSize";
 
-        List<Task> tasks = namedJdbcTemplate.query(sql, new TaskRowMapper());
+        List<Task> tasks = namedJdbcTemplate.query(sql, new MapSqlParameterSource()
+                .addValue("pageSize", pageSize)
+                .addValue("pageNumber", page),
+                new TaskRowMapper());
 
         for (Task task : tasks) {
             List<Comment> comments = getCommentsForTask(task.getId());
@@ -44,7 +50,7 @@ public class TaskDao {
         return tasks;
     }
 
-    public List<Task> getTasksOfOtherUsers(long userId) {
+    public List<Task> getTasksOfOtherUsers(int page, long userId) {
         String sql = "select t.id as task_id, " +
                 "       t.header, " +
                 "       t.description, " +
@@ -58,10 +64,13 @@ public class TaskDao {
                 "inner join w.users as u on t.author_id = u.id " +
                 "inner join w.users as e on t.executor_id = e.id " +
                 "where (t.author_id <> :userId and t.executor_id <> :userId) " +
-                "order by t.id";
+                "order by t.id " +
+                "limit :pageSize offset (:pageNumber - 1) * :pageSize";
 
-        List<Task> tasks = namedJdbcTemplate.query(sql,
-                new MapSqlParameterSource().addValue("userId", userId),
+        List<Task> tasks = namedJdbcTemplate.query(sql, new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("pageSize", pageSize)
+                .addValue("pageNumber", page),
                 new TaskRowMapper());
 
         for (Task task : tasks) {
@@ -73,7 +82,7 @@ public class TaskDao {
         return tasks;
     }
 
-    public List<Task> getTasksOfUser(long userId) {
+    public List<Task> getTasksOfUser(int page, long userId) {
         String sql = "select t.id as task_id, " +
                 "       t.header, " +
                 "       t.description, " +
@@ -87,10 +96,13 @@ public class TaskDao {
                 "inner join w.users as u on t.author_id = u.id " +
                 "inner join w.users as e on t.executor_id = e.id " +
                 "where (t.author_id = :userId or t.executor_id = :userId) " +
-                "order by t.id";
+                "order by t.id " +
+                "limit :pageSize offset (:pageNumber - 1) * :pageSize";
 
-        List<Task> tasks = namedJdbcTemplate.query(sql,
-                new MapSqlParameterSource().addValue("userId", userId),
+        List<Task> tasks = namedJdbcTemplate.query(sql, new MapSqlParameterSource()
+                .addValue("userId", userId)
+                .addValue("pageSize", pageSize)
+                .addValue("pageNumber", page),
                 new TaskRowMapper());
 
         for (Task task : tasks) {
