@@ -29,8 +29,8 @@ public class TaskDto {
                 .description(task.getDescription())
                 .status(task.getStatus())
                 .priority(task.getPriority())
-                .author(task.getAuthor() != null ? task.getAuthor().getUsername() : null)
-                .executor(task.getExecutor() != null ? task.getExecutor().getUsername() : null)
+                .author(task.getAuthor())
+                .executor(task.getExecutor())
                 .comments(task.getComments().stream().map(CommentDto::from).toList())
                 .build();
     }

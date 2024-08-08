@@ -14,7 +14,7 @@ public class Task {
     private String description;
     private String status;
     private String priority;
-    private User author;
-    private User executor;
+    private String author;
+    private String executor;
     private List<Comment> comments = new ArrayList<>();
 }

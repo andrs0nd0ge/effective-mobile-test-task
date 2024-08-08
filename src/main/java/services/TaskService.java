@@ -2,11 +2,16 @@ package services;
 
 import dao.TaskDao;
 import dto.*;
+import exceptions.ForbiddenException;
+import exceptions.TaskIdNullException;
+import exceptions.TasksNotFoundException;
+import exceptions.UserIdNullException;
 import models.Task;
+import models.User;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -16,20 +21,42 @@ public class TaskService {
         this.taskDao = taskDao;
     }
 
-    public List<TaskDto> getAllTasks(int page) {
+    public List<TaskDto> getAllTasks(Integer page) {
         List<Task> tasks = taskDao.getAllTasks(page);
 
-        return tasks.stream()
+        List<TaskDto> taskDtos = tasks.stream()
                 .map(TaskDto::from)
-                .collect(Collectors.toList());
+                .toList();
+
+        if (taskDtos.isEmpty()) {
+            throw new TasksNotFoundException();
+        }
+
+        return taskDtos;
     }
 
-    public List<TaskDto> getTasksOfOtherUsers(int page, long userId) {
+    public List<TaskDto> getTasksOfOtherUsers(Integer page, Authentication auth) {
+        User user = (User) auth.getPrincipal();
+
+        long userId;
+
+        if (user != null) {
+            userId = user.getId();
+        } else {
+            throw new ForbiddenException();
+        }
+
         List<Task> tasks = taskDao.getTasksOfOtherUsers(page, userId);
 
-        return tasks.stream()
+        List<TaskDto> taskDtos = tasks.stream()
                 .map(TaskDto::from)
-                .collect(Collectors.toList());
+                .toList();
+
+        if (taskDtos.isEmpty()) {
+            throw new TasksNotFoundException();
+        }
+
+        return taskDtos;
     }
 
     public List<TaskDto> getTasksOfUser(Integer page,
@@ -37,19 +64,39 @@ public class TaskService {
                                         Integer priorityId,
                                         String header,
                                         String description,
-                                        long authorId) {
+                                        Long userId) {
+        if (userId == null) {
+            throw new UserIdNullException();
+        }
+
         header = header != null ? header.trim() : null;
 
         description = description != null ? description.trim() : null;
 
-        List<Task> tasks = taskDao.getTasksOfUser(page, statusId, priorityId, header, description, authorId);
+        List<Task> tasks = taskDao.getTasksOfUser(page, statusId, priorityId, header, description, userId);
 
-        return tasks.stream()
+        List<TaskDto> taskDtos = tasks.stream()
                 .map(TaskDto::from)
-                .collect(Collectors.toList());
+                .toList();
+
+        if (taskDtos.isEmpty()) {
+            throw new TasksNotFoundException();
+        }
+
+        return taskDtos;
     }
 
-    public void createTask(CreateTaskDto taskDto, long authorId) {
+    public void createTask(CreateTaskDto taskDto, Authentication auth) {
+        User author = (User) auth.getPrincipal();
+
+        long authorId;
+
+        if (author != null) {
+            authorId = author.getId();
+        } else {
+            throw new ForbiddenException();
+        }
+
         String header = taskDto.getHeader();
         String description = taskDto.getDescription();
 
@@ -68,8 +115,22 @@ public class TaskService {
         taskDao.createTask(header, description, statusId, priorityId, authorId);
     }
 
-    public void editTask(EditTaskDto taskDto, long authorId) {
-        long taskId = taskDto.getTaskId();
+    public void editTask(EditTaskDto taskDto, Authentication auth) {
+        User author = (User) auth.getPrincipal();
+
+        long authorId;
+
+        if (author != null) {
+            authorId = author.getId();
+        } else {
+            throw new ForbiddenException();
+        }
+
+        Long taskId = taskDto.getTaskId();
+
+        if (taskId == null) {
+            throw new TaskIdNullException();
+        }
 
         String header = taskDto.getHeader();
         String description = taskDto.getDescription();
@@ -77,22 +138,64 @@ public class TaskService {
         taskDao.editTask(taskId, header, description, authorId);
     }
 
-    public void deleteTask(DeleteTaskDto taskDto, long authorId) {
-        long taskId = taskDto.getTaskId();
+    public void deleteTask(DeleteTaskDto taskDto, Authentication auth) {
+        User author = (User) auth.getPrincipal();
+
+        long authorId;
+
+        if (author != null) {
+            authorId = author.getId();
+        } else {
+            throw new ForbiddenException();
+        }
+
+        Long taskId = taskDto.getTaskId();
+
+        if (taskId == null) {
+            throw new TaskIdNullException();
+        }
 
         taskDao.deleteTask(taskId, authorId);
     }
 
-    public void changeStatusOfTask(ChangeStatusTaskDto taskDto, long userId) {
-        long taskId = taskDto.getTaskId();
+    public void changeStatusOfTask(ChangeStatusTaskDto taskDto, Authentication auth) {
+        User user = (User) auth.getPrincipal();
+
+        long userId;
+
+        if (user != null) {
+            userId = user.getId();
+        } else {
+            throw new ForbiddenException();
+        }
+
+        Long taskId = taskDto.getTaskId();
+
+        if (taskId == null) {
+            throw new TaskIdNullException();
+        }
 
         long statusId = taskDto.getStatusId();
 
         taskDao.changeStatusOfTask(taskId, statusId, userId);
     }
 
-    public void appointExecutorToTask(ExecutorTaskDto taskDto, long authorId) {
-        long taskId = taskDto.getTaskId();
+    public void appointExecutorToTask(ExecutorTaskDto taskDto, Authentication auth) {
+        User author = (User) auth.getPrincipal();
+
+        long authorId;
+
+        if (author != null) {
+            authorId = author.getId();
+        } else {
+            throw new ForbiddenException();
+        }
+
+        Long taskId = taskDto.getTaskId();
+
+        if (taskId == null) {
+            throw new TaskIdNullException();
+        }
 
         long executorId = taskDto.getExecutorId();
 
@@ -100,7 +203,11 @@ public class TaskService {
     }
 
     public void addCommentToTask(CommentTaskDto taskDto) {
-        long taskId = taskDto.getTaskId();
+        Long taskId = taskDto.getTaskId();
+
+        if (taskId == null) {
+            throw new TaskIdNullException();
+        }
 
         String comment = taskDto.getComment();
 

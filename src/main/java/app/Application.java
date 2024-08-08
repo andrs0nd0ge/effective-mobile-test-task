@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan({"controllers", "dao", "dto", "models", "services", "config"})
+@ComponentScan({"controllers", "dao", "dto", "models", "services", "config", "util", "exceptions", "enums"})
 public class Application {
 
     public static void main(String[] args) {
